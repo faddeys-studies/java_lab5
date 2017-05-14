@@ -1,12 +1,12 @@
 package tictactoe.game;
 
 
-public class Turn {
+public class Point {
 
     public final int row;
     public final int col;
 
-    public Turn(int row, int col) {
+    public Point(int row, int col) {
         this.row = row;
         this.col = col;
     }

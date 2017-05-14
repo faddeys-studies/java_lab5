@@ -2,7 +2,7 @@ package tictactoe.player;
 
 
 import tictactoe.game.GameView;
-import tictactoe.game.Turn;
+import tictactoe.game.Point;
 import tictactoe.ui.GameField;
 
 import java.util.logging.Logger;
@@ -13,7 +13,7 @@ public class UserAgent implements Agent {
 
     private final Object lock = new Object();
     private boolean stopped = false;
-    private Turn turn = null;
+    private Point point = null;
     private final GameField fieldCtl;
 
     public UserAgent(GameField fieldCtl) {
@@ -23,19 +23,19 @@ public class UserAgent implements Agent {
     private void clickListener(int row, int col) {
         log.fine("received click at ("+row+", "+col+")");
         synchronized (lock) {
-            turn = new Turn(row, col);
+            point = new Point(row, col);
             lock.notify();
         }
     }
 
     @Override
-    public Turn decideTurn(GameView game) {
+    public Point decideTurn(GameView game) {
         log.fine("started decideTurn() procedure");
         int key = fieldCtl.addCellClickListener(this::clickListener);
         try {
             synchronized (lock) {
-                turn = null;
-                while (turn == null) {
+                point = null;
+                while (point == null) {
                     log.finer("waiting for user's click");
                     lock.wait();
                     if (stopped) {
@@ -43,9 +43,9 @@ public class UserAgent implements Agent {
                         return null;
                     }
                 }
-                log.finer("got turn: "+turn);
-                Turn t = turn;
-                turn = null;
+                log.finer("got point: "+ point);
+                Point t = point;
+                point = null;
                 return t;
             }
         } catch (InterruptedException exc) {

@@ -1,10 +1,10 @@
 package tictactoe;
 
 
-import tictactoe.game.Game;
-import tictactoe.game.Turn;
+import tictactoe.game.*;
 import tictactoe.player.Agent;
 import tictactoe.player.AgentManager;
+import tictactoe.player.AlphaBetaAIAgent;
 import tictactoe.player.UserAgent;
 import tictactoe.ui.GameField;
 
@@ -25,7 +25,7 @@ public class AppController {
     public AppController() {
         JFrame window = new JFrame();
         fieldCtl = new GameField(window.getRootPane());
-        currentGame = new Game(3, 3, 3);
+        currentGame = new Game(5, 6, 8);
         fieldCtl.update(currentGame);
 
         final int windowHeight = 40 + GameField.BUTTON_SIZE*currentGame.getFieldHeight();
@@ -41,8 +41,11 @@ public class AppController {
         window.setVisible(true);
         window.repaint();
 
-        startGame(new UserAgent(fieldCtl),
-                  new UserAgent(fieldCtl));
+        startGame(
+                new UserAgent(fieldCtl),
+                new AlphaBetaAIAgent(4, new AlphaBetaAIAgent.MaxStrikeLength())
+//                new UserAgent(fieldCtl)
+        );
     }
 
     public void startGame(Agent agent1, Agent agent2) {
@@ -53,7 +56,7 @@ public class AppController {
 
     private void startNextTurn() {
         log.fine("starting new turn");
-        agentManager.askForTurn(currentGame, (Turn t) -> {
+        agentManager.askForTurn(currentGame, (tictactoe.game.Point t) -> {
             log.finer("received turn: "+t);
             currentGame.makeTurn(t);
             fieldCtl.update(currentGame);
@@ -67,7 +70,7 @@ public class AppController {
         EventQueue.invokeLater(() -> {
             try {
                 Logger rootLogger = Logger.getLogger("tictactoe");
-                rootLogger.setLevel(Level.INFO);
+                rootLogger.setLevel(Level.FINE);
 
                 ConsoleHandler handler = new ConsoleHandler();
                 handler.setLevel(Level.ALL);

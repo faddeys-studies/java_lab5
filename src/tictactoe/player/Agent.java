@@ -1,11 +1,11 @@
 package tictactoe.player;
 
 import tictactoe.game.GameView;
-import tictactoe.game.Turn;
+import tictactoe.game.Point;
 
 public interface Agent {
 
-    Turn decideTurn(GameView game);
+    Point decideTurn(GameView game);
 
     boolean isAI();
 

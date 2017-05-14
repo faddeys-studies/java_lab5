@@ -92,8 +92,8 @@ public class Game implements GameView {
         }
     }
 
-    public void makeTurn(Turn turn) {
-        makeTurn(turn.row, turn.col);
+    public void makeTurn(Point point) {
+        makeTurn(point.row, point.col);
     }
 
     public synchronized void makeTurn(int row, int col) {
@@ -156,8 +156,10 @@ public class Game implements GameView {
         }
 
         // diagonal strikes
-        int nDiagonals = 1 + getFieldHeight() + getFieldWidth() - 2*getWinLength();
-        for (int diagIdx = -nDiagonals/2; diagIdx < nDiagonals/2+1; diagIdx++) {
+        int nVertDiag = getFieldHeight() - getWinLength();
+        int nHorDiag = getFieldWidth() - getWinLength() + 1;
+//        int nDiagonals = nVertDiag + nHorDiag;
+        for (int diagIdx = -nVertDiag; diagIdx < nHorDiag; diagIdx++) {
             // main diagonal
             checker.reset();
             int row = -Math.min(0, diagIdx);
@@ -178,11 +180,11 @@ public class Game implements GameView {
             col = getFieldWidth() - 1 - Math.max(0, diagIdx);
             for (; col >= 0 && row < getFieldHeight(); row++, col--) {
                 if (checker.check(field[row][col])) {
-                    int endRow = row+1, endCol = col+1;
+                    int endRow = row+1;
                     return new Result(
                             checker.getCurrentPlayer(),
                             endRow-getWinLength(), endRow,
-                            endCol, endCol+getWinLength()
+                            col+getWinLength()-1, col-1
                     );
                 }
             }
@@ -261,15 +263,21 @@ public class Game implements GameView {
         Player winner;
         int winRowStart, winRowEnd;
         int winColStart, winColEnd;
+        int dr, dc;
 
         Result(Player winner,
                int winRowStart, int winRowEnd,
                int winColStart, int winColEnd) {
             this.winner = winner;
+
             this.winRowStart = winRowStart;
             this.winRowEnd = winRowEnd;
+            this.dr = (winRowEnd >= winRowStart) ? 1 : -1;
+
             this.winColStart = winColStart;
             this.winColEnd = winColEnd;
+            this.dc = (winColEnd >= winColStart) ? 1 : -1;
+
         }
 
         public Player getWinner() {
@@ -283,7 +291,7 @@ public class Game implements GameView {
                 Arrays.fill(rowIndices, winRowStart);
             } else {
                 for (int i = 0; i < Game.this.getWinLength(); i++) {
-                    rowIndices[i] = i + winRowStart;
+                    rowIndices[i] = this.dr*i + winRowStart;
                 }
             }
             return rowIndices;
@@ -296,7 +304,7 @@ public class Game implements GameView {
                 Arrays.fill(colIndices, winColStart);
             } else {
                 for (int i = 0; i < Game.this.getWinLength(); i++) {
-                    colIndices[i] = i + winColStart;
+                    colIndices[i] = this.dc*i + winColStart;
                 }
             }
             return colIndices;

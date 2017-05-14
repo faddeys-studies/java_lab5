@@ -15,6 +15,10 @@ public interface GameView {
 
     Player getCurrentPlayer();
 
+    default boolean isFinished() {
+        return getResult() != null;
+    }
+
     interface Result {
 
         Player getWinner();
