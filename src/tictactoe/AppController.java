@@ -7,9 +7,15 @@ import tictactoe.player.AgentManager;
 import tictactoe.player.AlphaBetaAIAgent;
 import tictactoe.player.UserAgent;
 import tictactoe.ui.GameField;
+import tictactoe.ui.SettingsDialog;
+import utils.Procedure;
 
 import javax.swing.*;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuKeyEvent;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,9 +29,11 @@ public class AppController {
     private Game currentGame;
 
     public AppController() {
+        System.setProperty("apple.laf.useScreenMenuBar", "true");
+
         JFrame window = new JFrame();
         fieldCtl = new GameField(window.getRootPane());
-        currentGame = new Game(5, 6, 8);
+        currentGame = new Game(3, 3, 3);
         fieldCtl.update(currentGame);
 
         final int windowHeight = 40 + GameField.BUTTON_SIZE*currentGame.getFieldHeight();
@@ -37,15 +45,44 @@ public class AppController {
                 windowWidth,
                 windowHeight);
 
+        initMenu(window);
+
         window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         window.setVisible(true);
-        window.repaint();
 
         startGame(
                 new UserAgent(fieldCtl),
-                new AlphaBetaAIAgent(4, new AlphaBetaAIAgent.MaxStrikeLength())
-//                new UserAgent(fieldCtl)
+                new UserAgent(fieldCtl)
         );
+    }
+
+    private void initMenu(JFrame window) {
+        JMenuBar menuBar = new JMenuBar();
+        window.setJMenuBar(menuBar);
+
+        JMenu fileMenu = new JMenu("File");
+        menuBar.add(fileMenu);
+
+        JMenuItem newItem = new JMenuItem("New");
+        fileMenu.add(newItem);
+        setAction(newItem, KeyEvent.VK_N, () -> {
+            new SettingsDialog(
+                fieldCtl,
+                (SettingsDialog.GameConfig conf) -> {
+                    fieldCtl.update(conf.game);
+                    agentManager.requestStop();
+                    currentGame = conf.game;
+                    startGame(conf.crosses, conf.zeros);
+                    window.pack();
+                });
+        });
+    }
+
+    private void setAction(JMenuItem item, int key, Procedure procedure) {
+        item.setAccelerator(KeyStroke.getKeyStroke(
+                key, ActionEvent.CTRL_MASK
+        ));
+        item.addActionListener((ActionEvent ae) -> procedure.execute());
     }
 
     public void startGame(Agent agent1, Agent agent2) {

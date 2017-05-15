@@ -12,25 +12,40 @@ public class AlphaBetaAIAgent implements Agent {
 
     private static final Logger log = Logger.getLogger(AlphaBetaAIAgent.class.getName());
 
-    private final int maxDepth;
     private final Heuristic heuristic;
     private final Random random;
 
-    public AlphaBetaAIAgent(int maxDepth, Heuristic heuristic) {
-        this.maxDepth = maxDepth;
-        this.heuristic = heuristic;
+    public AlphaBetaAIAgent() {
+        this.heuristic = new MaxStrikeLength();
         random = new Random();
     }
 
     @Override
     public Point decideTurn(GameView game) {
-        log.fine("entering AlphaBeta algorithm");
+        log.fine("entering AI algorithm");
+
+        int nEmpty = 0;
+        for(List<Cell> cells : GameUtils.getRows(game)) {
+            for(Cell c : cells) {
+                if (c.player == null) nEmpty++;
+            }
+        }
+
+        int maxDepth = 0;
+        int maxNodes = 5000 * (game.getFieldWidth() + game.getFieldHeight());
+        while (maxNodes > 0 && nEmpty > 0) {
+            maxDepth++;
+            maxNodes /= nEmpty;
+            nEmpty--;
+        }
+
         ABPAnswer answer = computeDecision(
                 game, P.MAX, 0,
                 -Float.MAX_VALUE, Float.MAX_VALUE,
-                new Estimator(game.getCurrentPlayer(), heuristic)
+                new Estimator(game.getCurrentPlayer(), heuristic),
+                maxDepth
         );
-        log.fine("done AlphaBeta algorithm: "+answer.point);
+        log.fine("done AI algorithm: "+answer.point);
         return answer.point;
     }
 
@@ -44,7 +59,7 @@ public class AlphaBetaAIAgent implements Agent {
 
     private ABPAnswer computeDecision(GameView g, P p, int depth,
                                       float alpha, float beta,
-                                      Estimator e) {
+                                      Estimator e, int maxDepth) {
         if (g.isFinished() || depth >= maxDepth) {
             return new ABPAnswer(e.estimate(g, p), p);
         }
@@ -53,7 +68,7 @@ public class AlphaBetaAIAgent implements Agent {
             Game nextGame = new Game(g);
             nextGame.makeTurn(t);
             ABPAnswer nextAnswer = computeDecision(
-                    nextGame, p.opposite(), depth+1, alpha, beta, e
+                    nextGame, p.opposite(), depth+1, alpha, beta, e, maxDepth
             );
             best.maybeUpdate(t, nextAnswer);
             if (best.isPruning(alpha, beta)) break;

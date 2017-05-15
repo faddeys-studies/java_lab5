@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 
 public class GameField {
 
-    public static final int BUTTON_SIZE = 50;
+    public static final int BUTTON_SIZE = 35;
     private static final Logger log = Logger.getLogger(GameField.class.getName());
 
     private JPanel fieldPanel;
