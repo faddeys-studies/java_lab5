@@ -28,6 +28,9 @@ public class AgentManager {
         workerThread.start();
     }
 
+    public Agent getZerosAgent() { return zerosAgent; }
+    public Agent getCrossesAgent() { return crossesAgent; }
+
     public void askForTurn(GameView game, Consumer<Point> callback, Object lock) {
         synchronized (requests) {
             if (shouldStop) {

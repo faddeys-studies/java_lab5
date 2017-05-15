@@ -87,7 +87,8 @@ public class Game implements GameView {
         for (int row = 0; row < getFieldHeight(); row++) {
             csv.newLine();
             for (int col = 0; col < getFieldWidth(); col++) {
-                csv.value(field[row][col].toString());
+                Player p = field[row][col];
+                csv.value(p == null ? null : p.toString());
             }
         }
     }
